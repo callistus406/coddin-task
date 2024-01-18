@@ -1,0 +1,42 @@
+version: "3.1"
+
+services:
+  mgt_system:
+    build:
+      context: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app:ro
+      - /app/node_modules
+    env_file:
+      - ./.env
+
+    depends_on:
+      - mgt_system_db
+    restart: on-failure # Restart policy
+    
+
+  mgt_system_db:
+    image: mysql:8.0
+    container_name: mgt_system_db
+    env_file:
+      - ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mgt_system_db-data:/var/lib/
+      - ./mysql/conf.d:/etc/mysql/conf.d:ro
+      # - ./src/db/init_db.sql:/initdb.d
+    restart: unless-stopped
+
+
+
+volumes:
+  mgt_system_db-data:
+    driver: local

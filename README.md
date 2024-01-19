@@ -9,3 +9,10 @@ After successfully launching the Docker container, a default admin account will 
 - **Username**: admin
 - **Password**: Admin123#
 
+## Server init
+- **make docker is running on your computer**
+- **CMD**
+- docker-compose -f docker-compose.yml
+- Or you can start up the containers from Docker desktop after initializing the containers 
+
+

@@ -310,15 +310,14 @@ class JobRolesController {
     next: NextFunction
   ): Promise<any> => {
     try {
-      const { status, employeeId } = req.body as {
-        status: string;
+      const { employmentStatus, employeeId } = req.body as {
+        employmentStatus: string;
         employeeId: string;
       };
 
-      if (!status || !employeeId)
+      if (!employmentStatus || !employeeId)
         throw createCustomError("Inputs cannot be empty", 400);
-      if (!Helpers.isBoolean(status.toString()))
-        throw createCustomError("invalid input 'status'", 400);
+
       const employee = await UserModel.findOne({
         where: { user_id: employeeId, user_type: EMPLOYEE_ROLE },
       });
@@ -328,19 +327,17 @@ class JobRolesController {
           404
         );
 
-      const response = await RoleModel.update(
-        { is_active: Boolean(status) },
+      const response = await UserModel.update(
+        { is_active: Helpers.convertState(employmentStatus) ? true : false },
         { where: { user_id: employeeId } }
       );
 
       if (!response) throw createCustomError("Unable to update Employee", 500);
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          payload: "Employee state updated successfully",
-        });
+      return res.status(200).json({
+        success: true,
+        payload: "Employee state updated successfully",
+      });
     } catch (error) {
       next(error);
     }

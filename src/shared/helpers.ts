@@ -27,6 +27,11 @@ class Helpers {
       return false;
     }
   }
+
+  static convertState(str: string): boolean {
+    if (str.toLowerCase() === "employed") return true;
+    return false;
+  }
   static convertRole(role: string): string {
     if (role === "manager") return MANAGER_ROLE;
     if (role === "developer") return DEVELOPER_ROLE;

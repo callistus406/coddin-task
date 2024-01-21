@@ -48,5 +48,11 @@ router.post(
   VerifyUser.isAdmin,
   JobRolesController.createJobRole
 );
+router.patch(
+  "/update-employee",
+  verifyJWT,
+  VerifyUser.isAdmin,
+  JobRolesController.updateEmployee
+);
 
 export default router;

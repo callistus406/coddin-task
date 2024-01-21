@@ -17,6 +17,16 @@ class Helpers {
 
     return true;
   }
+
+  static isBoolean(str: string): boolean {
+    const booleanValue = Boolean(str);
+
+    if (booleanValue === true || booleanValue === false) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   static convertRole(role: string): string {
     if (role === "manager") return MANAGER_ROLE;
     if (role === "developer") return DEVELOPER_ROLE;

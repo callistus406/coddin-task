@@ -60,25 +60,22 @@ class EmployeeController {
           code: Helpers.convertRole(role),
           user_id: newUser.dataValues.user_id,
         });
-        if (!response){
-
-          logger.error(
-            `Database Error: Unable to create Job role  `,
-            {
-              module: "managementCtrl.js",
-              requestId: requestId,
-              userId: req.user ? req.user.user_id : null,
-              method: req.method,
-              path: req.path,
-              action: "Create Job role",
-              statusCode: 500,
-              clientIp: req.clientIp,
-            }
-          );
+        if (!response) {
+          logger.error(`Database Error: Unable to create Job role  `, {
+            module: "managementCtrl.js",
+            requestId: requestId,
+            userId: req.user ? req.user.user_id : null,
+            method: req.method,
+            path: req.path,
+            action: "Create Job role",
+            statusCode: 500,
+            clientIp: req.clientIp,
+          });
           throw createCustomError(
             "Sorry Something went wrong, Please try again",
             500
-          );}
+          );
+        }
       } else {
         logger.error(
           `Database Error: Unable to create employee  with ${email} `,
@@ -108,32 +105,34 @@ class EmployeeController {
     }
   };
 
-  static getEmployee= async (
+  static getEmployee = async (
     req: any,
     res: Response,
     next: NextFunction
   ): Promise<any> => {
     try {
-      const {userId,email} = req.query;
-      let  response;
-      if(userId && !email){
+      const { userId, email } = req.query;
+      let response;
+      if (userId && !email) {
         response = await UserModel.findOne({
-         where: { user_id: userId, user_type: EMPLOYEE_ROLE },
-         include: RoleModel,
-       });
-        
-      }else if(!userId && email){
+          where: { user_id: userId, user_type: EMPLOYEE_ROLE },
+          include: RoleModel,
+        });
+      } else if (!userId && email) {
         response = await UserModel.findOne({
           where: { email, user_type: EMPLOYEE_ROLE },
           include: RoleModel,
         });
-      }else{
-        throw createCustomError("Sorry. you only provide one search value( email or ID)",400)
+      } else {
+        throw createCustomError(
+          "Sorry. you only provide one search value( email or ID)",
+          400
+        );
       }
 
       if (!response)
         throw createCustomError(
-          `Employee not found.Please try another ${email?"Email ": "ID"}`,
+          `Employee not found.Please try another ${email ? "Email " : "ID"}`,
           404
         );
 
@@ -146,8 +145,6 @@ class EmployeeController {
       next(error);
     }
   };
-
-  
 
   static getEmployees = async (
     req: any,
@@ -191,22 +188,19 @@ class EmployeeController {
         where: { user_id: employeeId },
       });
 
-      if (numberOfDeletedRows < 1){
-        logger.error(
-          `Database Error: Unable to delete employee  `,
-          {
-            module: "managementCtrl.js",
-            requestId: requestId,
-            userId: req.user ? req.user.user_id : null,
-            method: req.method,
-            path: req.path,
-            action: "Delete Employee",
-            statusCode: 500,
-            clientIp: req.clientIp,
-          }
-        );
+      if (numberOfDeletedRows < 1) {
+        logger.error(`Database Error: Unable to delete employee  `, {
+          module: "managementCtrl.js",
+          requestId: requestId,
+          userId: req.user ? req.user.user_id : null,
+          method: req.method,
+          path: req.path,
+          action: "Delete Employee",
+          statusCode: 500,
+          clientIp: req.clientIp,
+        });
         throw createCustomError("Unable to delete record", 500);
-}
+      }
       return res
         .status(200)
         .json({ success: true, payload: "Employee deleted" });
@@ -305,6 +299,48 @@ class JobRolesController {
         hits: response.length,
         message: "Available Roles retrieved successfully",
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static updateEmployee = async (
+    req: any,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    try {
+      const { status, employeeId } = req.body as {
+        status: string;
+        employeeId: string;
+      };
+
+      if (!status || !employeeId)
+        throw createCustomError("Inputs cannot be empty", 400);
+      if (!Helpers.isBoolean(status.toString()))
+        throw createCustomError("invalid input 'status'", 400);
+      const employee = await UserModel.findOne({
+        where: { user_id: employeeId, user_type: EMPLOYEE_ROLE },
+      });
+      if (!employee)
+        throw createCustomError(
+          "Employee not found. please check your input and try again",
+          404
+        );
+
+      const response = await RoleModel.update(
+        { is_active: Boolean(status) },
+        { where: { user_id: employeeId } }
+      );
+
+      if (!response) throw createCustomError("Unable to update Employee", 500);
+
+      return res
+        .status(200)
+        .json({
+          success: true,
+          payload: "Employee state updated successfully",
+        });
     } catch (error) {
       next(error);
     }
